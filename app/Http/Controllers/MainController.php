@@ -10,9 +10,13 @@ use App\Models\Order;
 use App\Models\Customers;
 use App\Models\OrderDetails;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class MainController extends Controller
 {
+    public function login(){
+        return view('login');
+    }
     public function indexView()
     {
         $orders = Order::all();
@@ -76,7 +80,7 @@ class MainController extends Controller
         $product = Product::findOrFail($id);
         $product->delete();
 
-        return redirect()->back()->with('success', 'Product deleted successfully!');
+        return redirect()->back()->with(Log::alert('success', 'Product deleted successfully!'));
     }
 
 

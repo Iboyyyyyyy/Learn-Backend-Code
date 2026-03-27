@@ -1,12 +1,13 @@
 <?php
 
+// use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\MainController;
 // use App\Http\Controllers\ProductController;
 // use App\Http\Controllers\CategoriesController;
 
-Route::get('/', [MainController::class, 'indexView']);
-
+Route::get('/welcome', [MainController::class, 'indexView']);
+Route::get('/', [MainController::class, 'login']);
 
 // Product routes
 Route::get('/products', [MainController::class, 'indexView']);
