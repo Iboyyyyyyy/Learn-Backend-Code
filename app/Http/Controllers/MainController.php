@@ -1,22 +1,41 @@
 <?php
 
 namespace App\Http\Controllers;
-
-
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Http\Request;
 use App\Models\Product;
 use App\Models\Categories;
 use App\Models\Order;
 use App\Models\Customers;
 use App\Models\OrderDetails;
+use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Redirect;
 
 class MainController extends Controller
 {
     public function login(){
         return view('login');
     }
+    public function logininput(Request $request)
+{
+    $username = $request->input('username');
+    $email = $request->input('email');
+    $password = $request->input('password');
+
+    // find user first (without password)
+    $user = User::where('name', $username)
+                ->where('email', $email)
+                ->first();
+
+    // check password correctly
+    if ($user && Hash::check($password, $user->password)) {
+        return Redirect::to('welcome');
+    } else {
+        return back()->with('error', 'Invalid credentials');
+    }
+}
     public function indexView()
     {
         $orders = Order::all();

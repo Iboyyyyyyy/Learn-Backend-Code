@@ -37,16 +37,19 @@
                                 <h3>Sign In to <strong>Colorlib</strong></h3>
                                 <p class="mb-4">Hahahahahahahaha</p>
                             </div>
-                            <form action="#" method="post">
+                            <form action="/logininput" method="POST">
+                                @csrf
+                                <label for="username">Username</label>
                                 <div class="form-group first">
-                                    <label for="username">Username</label>
-                                    <input type="text" class="form-control" id="username">
-
+                                    <input type="text" class="form-control" id="username" name="username">
                                 </div>
+                                <label for="email">Email</label>
+                                <div class="form-group first">
+                                    <input type="email" class="form-control" id="email" name="email">
+                                </div>
+                                <label for="password">Password</label>
                                 <div class="form-group last mb-4">
-                                    <label for="password">Password</label>
-                                    <input type="password" class="form-control" id="password">
-
+                                    <input type="password" class="form-control" id="password" name="password">
                                 </div>
 
                                 <div class="d-flex mb-5 align-items-center">
@@ -58,9 +61,9 @@
                                     <span class="ml-auto"><a href="#" class="forgot-pass">Forgot Password</a></span>
                                 </div>
 
-                                <a href="welcome" class="btn text-white btn-block btn-primary">
+                                <button type="submit" class="btn text-white btn-block btn-primary">
                                     Log In
-                                </a>
+                                </button>
 
                                 <span class="d-block text-left my-4 text-muted"> or sign in with</span>
 
@@ -86,10 +89,10 @@
     </div>
 
 
-    <script src="js/jquery-3.3.1.min.js"></script>
+    {{-- <script src="js/jquery-3.3.1.min.js"></script>
     <script src="js/popper.min.js"></script>
     <script src="js/bootstrap.min.js"></script>
-    <script src="js/main.js"></script>
+    <script src="js/main.js"></script> --}}
 </body>
 
 </html>

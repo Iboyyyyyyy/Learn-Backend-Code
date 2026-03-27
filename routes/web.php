@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\MainController;
 // use App\Http\Controllers\ProductController;
 // use App\Http\Controllers\CategoriesController;
+// use App\Http\Controllers\UserController;
 
 Route::get('/welcome', [MainController::class, 'indexView']);
 Route::get('/', [MainController::class, 'login']);
@@ -22,3 +23,4 @@ Route::post('/orders', [MainController::class, 'storeOrder'])->name('orders.stor
 
 // Categories routes
 // Route::get('/', [CategoriesController::class, 'index']);
+Route::post('/logininput', [MainController::class, 'logininput'])->name('logininput');
