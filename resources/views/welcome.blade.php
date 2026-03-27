@@ -79,7 +79,7 @@
                 <div class="container-fluid p-0">
                     <div class="row">
                         <div class="col-8 d-flex">
-                            < class="card flex-fill">
+                            <div class="card flex-fill">
                                 <div class="card-header">
                                     <form action="{{ route('products.search') }}" method="GET">
                                         <input type="text" name="product_name" placeholder="Search...">
@@ -99,34 +99,42 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @forelse($products as $product)
+                                        @forelse($orderDetails as $detail)
                                         @php
-                                        $category = $categories->firstWhere('category_id', $product->category_id);
-                                        $orderDetail = $orderDetails->firstWhere('product_id', $product->product_id);
-                                        $order = $orderDetail ? $orders->firstWhere('order_id', $orderDetail->order_id)
-                                        : null;
+                                        // Since we start from the Detail, we find the parent Order and the Product
+                                        $order = $orders->firstWhere('order_id', $detail->order_id);
+                                        $product = $product_lists->firstWhere('product_id', $detail->product_id);
                                         $customer = $order ? $customers->firstWhere('customer_id', $order->customer_id)
                                         : null;
+                                        $totalPrice = $detail->quantity * $product->price;
                                         @endphp
                                         <tr>
-                                            <td class="d-none d-xl-table-cell">{{ $order->order_id ?? 'N/A' }}</td>
-                                            <td class="d-none d-xl-table-cell">{{ $product->product_name }}</td>
-                                            <td class="d-none d-md-table-cell">{{ $customer->customer_name ?? 'N/A' }}
+                                            <td class="d-none d-xl-table-cell">#{{ $order->order_id ?? 'N/A' }}</td>
+
+                                            <td class="d-none d-xl-table-cell">{{ $product->product_name ?? 'Unknown
+                                                Product' }}</td>
+
+                                            <td class="d-none d-md-table-cell">{{ $customer->customer_name ?? 'Guest' }}
                                             </td>
-                                            <td class="d-none d-xl-table-cell">{{ $orderDetail->quantity ?? 'N/A' }}
-                                            </td>
-                                            <td><span class="badge bg-warning">{{ number_format($product->price, 2) }}
-                                                    $</span></td>
+
+                                            <td class="d-none d-xl-table-cell">{{ $detail->quantity }}</td>
+
                                             <td>
-                                                <button type="button" class="btn-edit"
-                                                    style="background: transparent; border: none;" data-toggle="modal"
-                                                    data-target="#update" data-id="{{ $product->product_id }}">
+                                                <span class="badge bg-warning">
+                                                    {{ number_format($totalPrice, 2) }} $
+                                                </span>
+                                            </td>
+
+                                            <td>
+                                                <button type="button" class="btn-edit" data-toggle="modal"
+                                                    data-target="#update" data-id="{{ $detail->id }}"
+                                                    style="background: transparent; border: none;">
                                                     <i class="align-middle me-2" data-feather="edit"
                                                         style="color: Green"></i>
                                                 </button>
-                                                <button type="button" class="btn-delete"
-                                                    style="background: transparent; border: none;" data-toggle="modal"
-                                                    data-target="#delete" data-id="{{ $product->product_id }}">
+                                                <button type="button" class="btn-delete" data-toggle="modal"
+                                                    data-target="#delete" data-id="{{ $detail->id }}"
+                                                    style="background: transparent; border: none;">
                                                     <i class="align-middle me-2" data-feather="trash-2"
                                                         style="color: Red"></i>
                                                 </button>
@@ -134,14 +142,14 @@
                                         </tr>
                                         @empty
                                         <tr>
-                                            <td colspan="4">No products found.</td>
+                                            <td colspan="6" class="text-center">No orders found.</td>
                                         </tr>
                                         @endforelse
                                     </tbody>
                                 </table>
                                 </br>
 
-                                {{$products->links('pagination::bootstrap-5')}}
+                                {{$orderDetails->links('pagination::bootstrap-5')}}
 
 
 
@@ -175,38 +183,53 @@
                                     </div>
                                 </div>
 
+
                                 <div class="modal fade" id="update" tabindex="-1" role="dialog"
                                     aria-labelledby="exampleModalLabel" aria-hidden="true">
                                     <div class="modal-dialog" role="document">
                                         <div class="modal-content">
-                                            <form action="{{ route('products.update') }}" method="POST">
+                                            <form action="{{ route('orders.store') }}" method="POST" id="order-form">
                                                 @csrf
-                                                @method('PUT')
-                                                <div class="modal-header">
-                                                    <h5 class="modal-title" id="exampleModalLabel">Update Product ID:
-                                                        <span id="modal-product-id"></span>
-                                                    </h5>
-                                                    <input type="hidden" id="id" name="txtEid">
-                                                    <button type=" button" class="close" data-dismiss="modal"
-                                                        aria-label="Close">
-                                                        <span aria-hidden="true">&times;</span>
-                                                    </button>
-                                                </div>
-                                                <div class="modal-body">
+                                                <div class="card-body">
+                                                    <label for="customer_id">Customer:</label>
+                                                    <select id="customer_id" name="customer_id" class="form-select mb-3"
+                                                        required>
+                                                        <option value="">Select Customer</option>
+                                                        @foreach ($customers as $customer)
+                                                        <option value="{{ $customer->customer_id }}">{{
+                                                            $customer->customer_name }}</option>
+                                                        @endforeach
+                                                    </select>
 
-                                                    <input type="text" class="form-control" id="product_name"
-                                                        name="product_name" placeholder="Product Name"></br>
-                                                    <input type="text" class="form-control" id="category_id"
-                                                        name="category_id" placeholder="Category ID"></br>
-                                                    <input type="text" class="form-control" id="unit" name="unit"
-                                                        placeholder="Unit"></br>
-                                                    <input type="text" class="form-control" id="price" name="price"
-                                                        placeholder="Price">
-                                                </div>
-                                                <div class="modal-footer">
-                                                    <button type="button" class="btn btn-secondary"
-                                                        data-dismiss="modal">Close</button>
-                                                    <button type="submit" class="btn btn-primary">Save changes</button>
+                                                    <hr>
+                                                    <h5>Products</h5>
+                                                    <div id="product-container">
+                                                        <div class="product-row border p-2 mb-2">
+                                                            <label>Product:</label>
+                                                            <select name="details[0][product_id]"
+                                                                class="form-select mb-2" required>
+                                                                <option value="">Select Product</option>
+                                                                @foreach ($product_lists as $product)
+                                                                <option value="{{ $product->product_id }}">{{
+                                                                    $product->product_name }}</option>
+                                                                @endforeach
+                                                            </select>
+
+                                                            <label>Quantity:</label>
+                                                            <input type="number" name="details[0][quantity]"
+                                                                class="form-control mb-2" min="1" required>
+                                                        </div>
+                                                    </div>
+
+                                                    <button type="button" class="btn btn-sm btn-outline-primary mb-3"
+                                                        id="add-product">
+                                                        + Add Another Product
+                                                    </button>
+
+                                                    <div class="d-grid gap-2 mt-3">
+                                                        <button type="submit" class="btn btn-lg btn-success">Create
+                                                            Order</button>
+                                                    </div>
                                                 </div>
                                             </form>
                                         </div>
@@ -221,36 +244,74 @@
                                 <div class="card-header">
                                     <h5 class="card-title mb-0">Create Order</h5>
                                 </div>
-                                <form action="{{ route('orders.store') }}" method="POST" id="order-form">
-                                    @csrf
+                                {{-- <form action="{{ route('orders.store') }}" method="POST" id="order-form">
+                                    csrf
                                     <div class="card-body">
                                         <label for="customer_id">Customer:</label>
                                         <select id="customer_id" name="customer_id" class="form-select mb-3" required>
                                             <option value="">Select Customer</option>
-                                            @foreach ($customers as $customer)
-                                            <option value="{{ $customer->customer_id }}" style="color: black;">{{ $customer->customer_name }}</option>
-                                            @endforeach
+                                            foreach ($customers as $customer)
+                                            <option value="{{ $customer->customer_id }}" style="color: black;">{{
+                                                $customer->customer_name }}</option>
+                                            endforeach
                                         </select>
-                                        <div id="product-list">
-                                            <div class="product-item mb-3">
-                                                <label>Product:</label>
-                                                <select name="products[0][product_id]" class="form-select product-select mb-2" required>
-                                                    <option value="">Select Product</option>
-                                                    @foreach ($product_lists as $product)
-                                                    <option value="{{ $product->product_id }}" data-price="{{ $product->price }}">
-                                                        {{ $product->product_name }} - ${{ number_format($product->price, 2) }}
-                                                    </option>
-                                                    @endforeach
-                                                </select>
-                                                <label>Quantity:</label>
-                                                <input type="number" name="products[0][quantity]" class="form-control quantity-input" min="1" required>
-                                            </div>
-                                        </div>
+                                        <label>Product:</label>
+                                        <select class="form-select product-select mb-2" required>
+                                            <option value="">Select Product</option>
+                                            foreach ($product_lists as $product)
+                                            <option value="{{ $product->product_id }}"
+                                                data-price="{{ $product->price }}">
+                                                {{ $product->product_name }} - ${{ number_format($product->price, 2) }}
+                                            </option>
+                                            endforeach
+                                        </select>
+                                        <label>Quantity:</label>
+                                        <input type="number" name="quantity" class="form-control quantity-input" min="1"
+                                            required>
 
-                                        <button type="button" class="btn btn-sm btn-outline-primary mb-3" id="add-product">Add Another Product</button>
+
+                                        {{-- <button type="button" class="btn btn-sm btn-outline-primary mb-3"
+                                            id="add-product">Add Another Product</button>
 
                                         <div class="d-grid gap-2 mt-3">
                                             <button type="submit" class="btn btn-lg btn-success">Create Order</button>
+                                        </div>
+                                    </div>
+                                </form> --}}
+
+                                <form action="{{ route('orders.store') }}" method="POST">
+                                    @csrf
+
+                                    <div class="card-body">
+                                        <!-- Customer -->
+                                        <label>Customer:</label>
+                                        <select name="customer_id" class="form-select mb-3" required>
+                                            <option value="">Select Customer</option>
+                                            @foreach ($customers as $customer)
+                                            <option value="{{ $customer->customer_id }}">
+                                                {{ $customer->customer_name }}
+                                            </option>
+                                            @endforeach
+                                        </select>
+
+                                        <!-- Product -->
+                                        <label>Product:</label>
+                                        <select name="product_id" class="form-select mb-2" required>
+                                            <option value="">Select Product</option>
+                                            @foreach ($products as $product)
+                                            <option value="{{ $product->product_id }}">
+                                                {{ $product->product_name }} - ${{ number_format($product->price, 2) }}
+                                            </option>
+                                            @endforeach
+                                        </select>
+
+                                        <!-- Quantity -->
+                                        <label>Quantity:</label>
+                                        <input type="number" name="details[0][quantity]" class="form-control" min="1"
+                                            required>
+
+                                        <div class="d-grid gap-2 mt-3">
+                                            <button type="submit" class="btn btn-success">Create Order</button>
                                         </div>
                                     </div>
                                 </form>
@@ -291,228 +352,6 @@
     </div>
 
     <script src="js/app.js"></script>
-
-    <script>
-        document.addEventListener("DOMContentLoaded", function() {
-			var ctx = document.getElementById("chartjs-dashboard-line").getContext("2d");
-			var gradient = ctx.createLinearGradient(0, 0, 0, 225);
-			gradient.addColorStop(0, "rgba(215, 227, 244, 1)");
-			gradient.addColorStop(1, "rgba(215, 227, 244, 0)");
-			// Line chart
-			new Chart(document.getElementById("chartjs-dashboard-line"), {
-				type: "line",
-				data: {
-					labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
-					datasets: [{
-						label: "Sales ($)",
-						fill: true,
-						backgroundColor: gradient,
-						borderColor: window.theme.primary,
-						data: [
-							2115,
-							1562,
-							1584,
-							1892,
-							1587,
-							1923,
-							2566,
-							2448,
-							2805,
-							3438,
-							2917,
-							3327
-						]
-					}]
-				},
-				options: {
-					maintainAspectRatio: false,
-					legend: {
-						display: false
-					},
-					tooltips: {
-						intersect: false
-					},
-					hover: {
-						intersect: true
-					},
-					plugins: {
-						filler: {
-							propagate: false
-						}
-					},
-					scales: {
-						xAxes: [{
-							reverse: true,
-							gridLines: {
-								color: "rgba(0,0,0,0.0)"
-							}
-						}],
-						yAxes: [{
-							ticks: {
-								stepSize: 1000
-							},
-							display: true,
-							borderDash: [3, 3],
-							gridLines: {
-								color: "rgba(0,0,0,0.0)"
-							}
-						}]
-					}
-				}
-			});
-		});
-    </script>
-    <script>
-        document.addEventListener("DOMContentLoaded", function() {
-			// Pie chart
-			new Chart(document.getElementById("chartjs-dashboard-pie"), {
-				type: "pie",
-				data: {
-					labels: ["Chrome", "Firefox", "IE"],
-					datasets: [{
-						data: [4306, 3801, 1689],
-						backgroundColor: [
-							window.theme.primary,
-							window.theme.warning,
-							window.theme.danger
-						],
-						borderWidth: 5
-					}]
-				},
-				options: {
-					responsive: !window.MSInputMethodContext,
-					maintainAspectRatio: false,
-					legend: {
-						display: false
-					},
-					cutoutPercentage: 75
-				}
-			});
-		});
-    </script>
-    <script>
-        document.addEventListener("DOMContentLoaded", function() {
-			// Bar chart
-			new Chart(document.getElementById("chartjs-dashboard-bar"), {
-				type: "bar",
-				data: {
-					labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
-					datasets: [{
-						label: "This year",
-						backgroundColor: window.theme.primary,
-						borderColor: window.theme.primary,
-						hoverBackgroundColor: window.theme.primary,
-						hoverBorderColor: window.theme.primary,
-						data: [54, 67, 41, 55, 62, 45, 55, 73, 60, 76, 48, 79],
-						barPercentage: .75,
-						categoryPercentage: .5
-					}]
-				},
-				options: {
-					maintainAspectRatio: false,
-					legend: {
-						display: false
-					},
-					scales: {
-						yAxes: [{
-							gridLines: {
-								display: false
-							},
-							stacked: false,
-							ticks: {
-								stepSize: 20
-							}
-						}],
-						xAxes: [{
-							stacked: false,
-							gridLines: {
-								color: "transparent"
-							}
-						}]
-					}
-				}
-			});
-		});
-    </script>
-    <script>
-        document.addEventListener("DOMContentLoaded", function() {
-			var markers = [{
-					coords: [31.230391, 121.473701],
-					name: "Shanghai"
-				},
-				{
-					coords: [28.704060, 77.102493],
-					name: "Delhi"
-				},
-				{
-					coords: [6.524379, 3.379206],
-					name: "Lagos"
-				},
-				{
-					coords: [35.689487, 139.691711],
-					name: "Tokyo"
-				},
-				{
-					coords: [23.129110, 113.264381],
-					name: "Guangzhou"
-				},
-				{
-					coords: [40.7127837, -74.0059413],
-					name: "New York"
-				},
-				{
-					coords: [34.052235, -118.243683],
-					name: "Los Angeles"
-				},
-				{
-					coords: [41.878113, -87.629799],
-					name: "Chicago"
-				},
-				{
-					coords: [51.507351, -0.127758],
-					name: "London"
-				},
-				{
-					coords: [40.416775, -3.703790],
-					name: "Madrid "
-				}
-			];
-			var map = new jsVectorMap({
-				map: "world",
-				selector: "#world_map",
-				zoomButtons: true,
-				markers: markers,
-				markerStyle: {
-					initial: {
-						r: 9,
-						strokeWidth: 7,
-						stokeOpacity: .4,
-						fill: window.theme.primary
-					},
-					hover: {
-						fill: window.theme.primary,
-						stroke: window.theme.primary
-					}
-				},
-				zoomOnScroll: false
-			});
-			window.addEventListener("resize", () => {
-				map.updateSize();
-			});
-		});
-    </script>
-    <script>
-        document.addEventListener("DOMContentLoaded", function() {
-			var date = new Date(Date.now() - 5 * 24 * 60 * 60 * 1000);
-			var defaultDate = date.getUTCFullYear() + "-" + (date.getUTCMonth() + 1) + "-" + date.getUTCDate();
-			document.getElementById("datetimepicker-dashboard").flatpickr({
-				inline: true,
-				prevArrow: "<span title=\"Previous month\">&laquo;</span>",
-				nextArrow: "<span title=\"Next month\">&raquo;</span>",
-				defaultDate: defaultDate
-			});
-		});
-    </script>
     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
         integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous">
     </script>
@@ -523,7 +362,43 @@
         integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous">
     </script>
 
-    <script>
+
+    {{-- <script>
+        let productIndex = 1;
+
+    document.getElementById('add-product').addEventListener('click', function() {
+        const container = document.getElementById('product-container');
+        const newRow = document.createElement('div');
+        newRow.className = 'product-row border p-2 mb-2';
+
+        newRow.innerHTML = `
+            <label>Product:</label>
+            <select name="details[${productIndex}][product_id]" class="form-select mb-2" required>
+                <option value="">Select Product</option>
+                foreach ($product_lists as $product)
+                    <option value="{{ $product->product_id }}">{{ $product->product_name }}</option>
+                endforeach
+            </select>
+
+            <label>Quantity:</label>
+            <input type="number" name="details[${productIndex}][quantity]" class="form-control mb-2" min="1" required>
+            <button type="button" class="btn btn-danger btn-sm remove-row">Remove</button>
+        `;
+
+        container.appendChild(newRow);
+        productIndex++;
+    });
+
+    // Delegate remove button click
+    document.getElementById('product-container').addEventListener('click', function(e) {
+        if (e.target.classList.contains('remove-row')) {
+            e.target.closest('.product-row').remove();
+        }
+    });
+    </script> --}}
+
+
+    {{-- <script>
         // Order form JavaScript
         $(document).ready(function() {
             let productIndex = 1;
@@ -553,7 +428,7 @@
                 $(this).closest('.product-item').remove();
             });
         });
-    </script>
+    </script> --}}
 </body>
 
 </html>

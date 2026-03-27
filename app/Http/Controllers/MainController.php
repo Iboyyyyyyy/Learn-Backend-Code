@@ -17,10 +17,10 @@ class MainController extends Controller
     {
         $orders = Order::all();
         $customers = Customers::all();
-        $orderDetails = OrderDetails::all();
+        $orderDetails = OrderDetails::paginate(9);
         $categories = Categories::all();
         $product_lists = Product::all();
-        $products = Product::paginate(9);
+        $products = Product::all();
         return view('welcome', compact('products', 'categories', 'orders', 'customers', 'orderDetails', 'product_lists'));
     }
 
@@ -45,7 +45,6 @@ class MainController extends Controller
         }
 
     }
-
 
     public function search(Request $request)
     {
@@ -80,37 +79,42 @@ class MainController extends Controller
         return redirect()->back()->with('success', 'Product deleted successfully!');
     }
 
+
     public function storeOrder(Request $request)
-    {
-        try {
-            $validatedData = $request->validate([
-                'customer_id' => 'required|integer|exists:customers,customer_id',
-                'products' => 'required|array|min:1',
-                'products.*.product_id' => 'required|integer|exists:products,product_id',
-                'products.*.quantity' => 'required|integer|min:1',
-            ]);
+{
+    $request->validate([
+        'customer_id' => 'required|exists:customers,customer_id',
+        'product_id'  => 'required|exists:products,product_id',
+        'quantity'    => 'required|integer|min:1',
+    ]);
 
-            DB::transaction(function () use ($validatedData) {
-                $order = Order::create([
-                    'customer_id' => $validatedData['customer_id'],
-                    'order_date' => now(),
-                ]);
+    DB::beginTransaction();
 
-                foreach ($validatedData['products'] as $productData) {
-                    $product = Product::findOrFail($productData['product_id']);
+    try {
+        // 1. Create Order
+        $order = Order::create([
+            'customer_id' => $request->customer_id,
+            'order_date' => now(),
+        ]);
 
-                    OrderDetails::create([
-                        'order_id' => $order->order_id,
-                        'product_id' => $productData['product_id'],
-                        'quantity' => $productData['quantity'],
-                        'price' => $product->price,
-                    ]);
-                }
-            });
+        // 2. Get product
+        $product = Product::findOrFail($request->product_id);
 
-            return redirect()->back()->with('success', 'Order created successfully!');
-        } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Failed to create order: ' . $e->getMessage());
-        }
+        // 3. Insert order detail
+        OrderDetails::create([
+            'order_id' => $order->order_id,
+            'product_id' => $request->product_id,
+            'quantity' => $request->quantity,
+            'price' => $product->price,
+        ]);
+
+        DB::commit();
+
+        return back()->with('success', 'Order created');
+
+    } catch (\Exception $e) {
+        DB::rollBack();
+        return back()->with('error', $e->getMessage());
     }
+}
 }

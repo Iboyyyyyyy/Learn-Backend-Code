@@ -8,10 +8,7 @@ class Order extends Model
 {
     protected $primaryKey = 'order_id';
 
-    protected $fillable = [
-        'customer_id',
-        'order_date',
-    ];
+    protected $fillable = ['customer_id', 'order_date'];
 
     public function customer()
     {

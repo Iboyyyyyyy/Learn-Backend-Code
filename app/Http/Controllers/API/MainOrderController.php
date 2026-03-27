@@ -22,25 +22,28 @@ class MainOrderController extends Controller
         $customers = Customers::all();
 
 
-        $orders = Order::with(['customer', 'orderDetails.product'])->get();
+        // Get all product_ids from orderdetails
+        $product_ids = $orderdetails->pluck('product_id')->unique();
+        $getnamecustomer = $customers->pluck('customer_name', 'customer_id');
 
-        $final = $orders->map(function ($order) {
-            $details = $order->orderDetails->map(function ($detail) {
-                $product_name = $detail->product?->product_name;
-                $product_price = $detail->product?->price ?? 0;
+        // Get only product names that exist in orderdetails
+        $products = Product::whereIn('product_id', $product_ids)->pluck('product_name', 'product_id');
+        $productPrices = Product::whereIn('product_id', $product_ids)->pluck('price', 'product_id');
+        $final = $orders->map(function ($order) use ($orderdetails, $products, $getnamecustomer, $productPrices) {
+            $details = $orderdetails->where('order_id', $order->order_id)->map(function ($detail) use ($products, $productPrices) {
+                $product_name = $products->get($detail->product_id);
+                $product_price = $productPrices->get($detail->product_id);
                 $total_price = $product_price * $detail->quantity;
-
                 return [
                     'product_name' => $product_name,
                     'quantity' => $detail->quantity,
-                    'unit_price' => $product_price,
-                    'total_price' => $total_price,
+                    'price' => $product_price,
+                    'total price' => $total_price
                 ];
             });
-
             return [
                 'order_id' => $order->order_id,
-                'customer_name' => $order->customer?->customer_name,
+                'customer_name' => $getnamecustomer->get($order->customer_id),
                 'order_date' => $order->order_date,
                 'details' => $details,
             ];
