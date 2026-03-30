@@ -10,6 +10,7 @@ use App\Models\Customers;
 use Illuminate\Http\Request;
 
 use Illuminate\Support\Facades\DB;
+// use Symfony\Component\Mime\Message;
 
 // use App\Models\Categories;
 
@@ -110,5 +111,42 @@ public function store(Request $request)
             'error' => $e->getMessage()
         ], 500);
     }
+}
+
+public function storeOrder(Request $request)
+{
+    echo "storeOrder method called";
+//     $request->validate([
+//         'customer_id' => 'required|exists:customers,customer_id',
+//         'product_id'  => 'required|exists:products,product_id',
+//         'quantity'    => 'required|integer|min:1',
+//     ]);
+
+//     DB::beginTransaction();
+
+//     try {
+//         // 1. Create Order
+//         $order = Order::create([
+//     'customer_id' => $request->customer_id,
+//     'order_date' => now(),
+// ]);
+
+// $product = Product::findOrFail($request->product_id);
+
+// OrderDetails::create([
+//     'order_id' => $order->order_id,
+//     'product_id' => $request->product_id,
+//     'quantity' => $request->quantity,
+//     'price' => $product->price,
+// ]);
+
+//         DB::commit();
+
+//         return back()->with('success', 'Order created');
+
+//     } catch (\Exception $e) {
+//         DB::rollBack();
+//         return back()->with('error', $e->getMessage());
+//     }
 }
 }

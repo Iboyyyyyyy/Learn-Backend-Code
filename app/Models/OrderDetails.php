@@ -8,7 +8,7 @@ class OrderDetails extends Model
 {
     protected $primaryKey = 'order_detail_id';
 
-    protected $fillable = ['order_id', 'product_id', 'quantity', 'price'];
+    protected $fillable = ['order_id', 'product_id', 'quantity'];
 
     public function product()
     {

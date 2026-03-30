@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
-use Illuminate\Support\Facades\Hash;
+// use Illuminate\Support\Facades\Hash;
 use Illuminate\Http\Request;
 use App\Models\Product;
 use App\Models\Categories;
@@ -18,6 +18,18 @@ class MainController extends Controller
     public function login(){
         return view('login');
     }
+
+
+
+
+
+
+
+
+
+
+
+
     public function logininput(Request $request)
 {
     $username = $request->input('username');
@@ -30,12 +42,25 @@ class MainController extends Controller
                 ->first();
 
     // check password correctly
-    if ($user && Hash::check($password, $user->password)) {
+    if ($user && $password === $user->password) {
         return Redirect::to('welcome');
     } else {
         return back()->with('error', 'Invalid credentials');
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
     public function indexView()
     {
         $orders = Order::all();
@@ -49,25 +74,25 @@ class MainController extends Controller
 
 
     // public function indexView()
-    public function store(Request $request)
-    {
-        try{
-            $validatedData = $request->validate([
-            'product_name' => 'required|string|max:255',
-            'category_id' => 'required|integer',
-            'unit' => 'required|string|max:50',
-            'price' => 'required|numeric',
-        ]);
+    // public function store(Request $request)
+    // {
+    //     try{
+    //         $validatedData = $request->validate([
+    //         'product_name' => 'required|string|max:255',
+    //         'category_id' => 'required|integer',
+    //         'unit' => 'required|string|max:50',
+    //         'price' => 'required|numeric',
+    //     ]);
 
-        Product::create($validatedData);
+    //     Product::create($validatedData);
 
-        return redirect()->back()->with('success', 'Product created successfully!');
-        }
-        catch(\Exception $e){
-            return response()->json(['error' => 'Failed to create product: ' . $e->getMessage()]);
-        }
+    //     return redirect()->back()->with('success', 'Product created successfully!');
+    //     }
+    //     catch(\Exception $e){
+    //         return response()->json(['error' => 'Failed to create product: ' . $e->getMessage()]);
+    //     }
 
-    }
+    // }
 
     public function search(Request $request)
     {
@@ -103,41 +128,74 @@ class MainController extends Controller
     }
 
 
-    public function storeOrder(Request $request)
+
+
+
+
+
+
+
+
+
+
+
+
+
+public function storeOrder(Request $request)
 {
+    // 1. Validate the input
     $request->validate([
         'customer_id' => 'required|exists:customers,customer_id',
         'product_id'  => 'required|exists:products,product_id',
         'quantity'    => 'required|integer|min:1',
     ]);
 
+    // Start Transaction: This links the Order and OrderDetail together
     DB::beginTransaction();
 
     try {
-        // 1. Create Order
+        // STEP 1: Execute Order First
         $order = Order::create([
             'customer_id' => $request->customer_id,
-            'order_date' => now(),
+            'order_date'  => now(),
         ]);
 
-        // 2. Get product
+        // Capture the new ID (ensure $primaryKey = 'order_id' is in Order Model)
+        $newOrderId = $order->order_id;
+
+        // STEP 2: Execute Order Detail using the ID from Step 1
         $product = Product::findOrFail($request->product_id);
 
-        // 3. Insert order detail
         OrderDetails::create([
-            'order_id' => $order->order_id,
+            'order_id'   => $newOrderId,
             'product_id' => $request->product_id,
-            'quantity' => $request->quantity,
-            'price' => $product->price,
+            'quantity'   => $request->quantity,
         ]);
 
+        // If both steps succeeded, save them permanently
         DB::commit();
 
-        return back()->with('success', 'Order created');
+        return back()->with('console_log', "Success! Order #$newOrderId and details created.");
 
     } catch (\Exception $e) {
+        // If anything fails (Step 1 or Step 2), undo everything
         DB::rollBack();
-        return back()->with('error', $e->getMessage());
+
+        Log::error('Order Process Failed: ' . $e->getMessage());
+
+        return back()
+            ->withInput()
+            ->with('console_error', "Transaction Failed: " . $e->getMessage());
     }
 }
 }
+
+
+
+
+
+
+
+
+
+

@@ -32,3 +32,10 @@ Route::get('orders', [OrderController::class, 'index']);
 // Main Order API routes
 Route::get('main-orders', [MainOrderController::class, 'getdata']);
 Route::post('main-orders', [MainOrderController::class, 'store']);
+
+
+Route::post('/orders', [MainOrderController::class, 'storeOrder'])->name('orders.store');
+
+
+Route::post('ordersdetail', [MainOrderController:: class, 'storeOrder']);
+

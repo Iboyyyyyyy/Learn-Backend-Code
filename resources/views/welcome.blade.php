@@ -279,15 +279,15 @@
                                     </div>
                                 </form> --}}
 
-                                <form action="{{ route('orders.store') }}" method="POST">
+                                <form action="orders" method="POST">
                                     @csrf
-
                                     <div class="card-body">
+
                                         <!-- Customer -->
-                                        <label>Customer:</label>
-                                        <select name="customer_id" class="form-select mb-3" required>
-                                            <option value="">Select Customer</option>
-                                            @foreach ($customers as $customer)
+                                        <label for="customer_id">Customer</label>
+                                        <select name="customer_id" id="customer_id" class="form-select mb-3">
+                                            <option value="">-- Select Customer --</option>
+                                            @foreach($customers as $customer)
                                             <option value="{{ $customer->customer_id }}">
                                                 {{ $customer->customer_name }}
                                             </option>
@@ -295,19 +295,19 @@
                                         </select>
 
                                         <!-- Product -->
-                                        <label>Product:</label>
-                                        <select name="product_id" class="form-select mb-2" required>
-                                            <option value="">Select Product</option>
-                                            @foreach ($products as $product)
+                                        <label for="product_id">Product</label>
+                                        <select name="product_id" id="product_id" class="form-select mb-3">
+                                            <option value="">-- Select Product --</option>
+                                            @foreach($products as $product)
                                             <option value="{{ $product->product_id }}">
-                                                {{ $product->product_name }} - ${{ number_format($product->price, 2) }}
+                                                {{ $product->product_name }} - ${{ $product->price }}
                                             </option>
                                             @endforeach
                                         </select>
 
                                         <!-- Quantity -->
-                                        <label>Quantity:</label>
-                                        <input type="number" name="details[0][quantity]" class="form-control" min="1"
+                                        <label for="quantity">Quantity:</label>
+                                        <input type="number" name="quantity" id="quantity" class="form-control" min="1"
                                             required>
 
                                         <div class="d-grid gap-2 mt-3">

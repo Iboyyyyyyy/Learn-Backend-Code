@@ -60,7 +60,6 @@ class ProductController extends Controller
             'unit' => 'required|string|max:50',
             'price' => 'required|numeric',
         ]);
-
         $product = Product::findOrFail($request->txtEid);
         $product->update($validatedData);
 
