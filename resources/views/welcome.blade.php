@@ -169,7 +169,7 @@ function submitOrder() {
                                         </tr>
                                     </thead>
                                     <tbody id="order-list-body">
-                                        @forelse ($orderDetails as $detail)
+                                        {{-- @forelse ($orderDetails as $detail)
                                         @php
                                         $product = $product_lists->firstWhere('product_id', $detail->product_id);
                                         $totalPrice = $detail->quantity * ($product->price ?? 0);
@@ -183,7 +183,7 @@ function submitOrder() {
                                                 {{ $detail->quantity }}
                                                 <button class="add" onclick="addQuantity({{ $detail->id }})">+++++</button>
                                             </td>
-                                            <td class="d-none d-xl-table-cell">{{ number_format($totalPrice, 2) }}$</td>
+                                            <td class="d-none d-xl-table-cell">{{ number_format($totalPrice, 2) }}</td>
                                             <td>
                                                 <button type="button" class="btn-delete"
                                                     style="background: transparent; border: none;">
@@ -196,7 +196,7 @@ function submitOrder() {
                                         <tr id="empty-row">
                                             <td colspan="5" class="text-center">No orders found.</td>
                                         </tr>
-                                        @endforelse
+                                        @endforelse --}}
                                     </tbody>
                                 </table>
                                 </br>
@@ -237,23 +237,28 @@ function addToCart(id, name, price) {
 function renderOrderTable() {
     const tbody = document.getElementById('order-list-body');
 
-    // Remove only the rows we added via JavaScript (keeping Blade rows if they exist)
+    // Clear only the newly added rows
     document.querySelectorAll('.js-new-row').forEach(row => row.remove());
 
-    // Hide the "No orders found" row if we have items
     const emptyRow = document.getElementById('empty-row');
     if (cart.length > 0 && emptyRow) {
         emptyRow.style.display = 'none';
     }
 
-    // 4. Loop through the array and append each item to the table
     cart.forEach((item, index) => {
         let total = (item.price * item.quantity).toFixed(2);
+
         let html = `
             <tr class="js-new-row">
                 <td>${index + 1}</td>
                 <td>${item.name}</td>
-                <td>${item.quantity}</td>
+                <td>
+                    <div class="d-flex align-items-center gap-2">
+                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="changeQuantity(${index}, -1)">-</button>
+                        <span class="mx-2">${item.quantity}</span>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="changeQuantity(${index}, 1)">+</button>
+                    </div>
+                </td>
                 <td>$${total}</td>
                 <td>
                     <button type="button" onclick="removeFromCart(${index})" style="border:none; background:none;">
@@ -265,11 +270,24 @@ function renderOrderTable() {
     });
 }
 
+// Unified function to handle both + and -
+function changeQuantity(index, amount) {
+    if (cart[index]) {
+        cart[index].quantity += amount;
+
+        // If quantity drops to 0, remove the item entirely
+        if (cart[index].quantity <= 0) {
+            removeFromCart(index);
+        } else {
+            renderOrderTable();
+        }
+    }
+}
+
 function removeFromCart(index) {
     cart.splice(index, 1);
     renderOrderTable();
 
-    // If table is totally empty, show the "No orders" message again
     if (cart.length === 0 && document.getElementById('empty-row')) {
         document.getElementById('empty-row').style.display = 'table-row';
     }
