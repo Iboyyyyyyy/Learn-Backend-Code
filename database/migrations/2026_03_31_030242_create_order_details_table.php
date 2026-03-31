@@ -9,9 +9,9 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-public function up()
-{
-    Schema::create('order_details', function (Blueprint $table) {
+    public function up(): void
+    {
+        Schema::create('order_details', function (Blueprint $table) {
         $table->id('order_detail_id'); // SERIAL PRIMARY KEY
         $table->unsignedBigInteger('order_id')->nullable();
         $table->unsignedBigInteger('product_id')->nullable();
@@ -29,7 +29,7 @@ public function up()
               ->on('products')
               ->onDelete('cascade');
     });
-}
+    }
 
     /**
      * Reverse the migrations.

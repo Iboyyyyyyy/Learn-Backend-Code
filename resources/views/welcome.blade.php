@@ -92,6 +92,7 @@
                                         <tr>
                                             <th>Order ID</th>
                                             <th class="d-none d-xl-table-cell">Product Name</th>
+                                            <th class="d-none d-xl-table-cell">Image</th>
                                             <th class="d-none d-xl-table-cell">Customer</th>
                                             <th class="d-none d-xl-table-cell">Quantity</th>
                                             <th class="d-none d-xl-table-cell">Price</th>
@@ -113,6 +114,14 @@
 
                                             <td class="d-none d-xl-table-cell">{{ $product->product_name ?? 'Unknown
                                                 Product' }}</td>
+                                            <td class="d-none d-xl-table-cell">
+                                                @if($product && $product->images)
+                                                <img src="{{ asset('images/' . $product->images) }}" alt="Product Image"
+                                                    style="width: 50px; height: 50px; object-fit: cover;">
+                                                @else
+                                                <span>No Image</span>
+                                                @endif
+                                            </td>
 
                                             <td class="d-none d-md-table-cell">{{ $customer->customer_name ?? 'Guest' }}
                                             </td>
@@ -317,33 +326,65 @@
                                 </form>
                             </div>
                         </div>
-
-
-
-
-                        {{-- <div class="col-4 d-flex" style="height: 400px">
+                        <div class="col-4 d-flex" style="height: 500px">
                             <div class="card flex-fill w-100">
                                 <div class="card-header">
-                                    <h5 class="card-title mb-0">Product</h5>
+                                    <h5 class="card-title mb-0">Add Product</h5>
                                 </div>
-                                <form action="{{ route('products.store') }}" method="POST">
-                                    csrf
+                                <form action="/products" method="POST" enctype="multipart/form-data">
+                                    @csrf
                                     <div class="card-body">
                                         <input type="text" class="form-control" id="product_name" name="product_name"
                                             placeholder="Product Name"></br>
-                                        <input type="text" class="form-control" id="category_id" name="category_id"
-                                            placeholder="Category ID"></br>
+                                        <select id="category_id" name="category_id" class="form-select mb-3">
+                                            <option value="">-- Select Category --</option>
+                                            @foreach($categories as $category)
+                                            <option value="{{ $category->category_id }}">
+                                                {{ $category->category_name }}
+                                            </option>
+                                            @endforeach
+                                        </select></br>
                                         <input type="text" class="form-control" id="unit" name="unit"
                                             placeholder="Unit"></br>
                                         <input type="text" class="form-control" id="price" name="price"
                                             placeholder="Price"></br>
                                         <div class="d-grid gap-2 mt-3">
+                                            <input type="file" class="form-control" id="images" name="images"
+                                                placeholder="Image"></br>
                                             <button type="submit" class="btn btn-lg btn-primary">Insert</button>
                                         </div>
                                     </div>
                                 </form>
                             </div>
-                        </div> --}}
+                        </div>
+                        <div class="col-4 d-flex" style="height: 550px">
+                            <div class="card flex-fill w-100">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0">Update Product</h5>
+                                </div>
+
+                                <form action="{{ route('products.update') }}" method="POST"
+                                    enctype="multipart/form-data">
+                                    @csrf
+                                    @method('PUT')
+                                    <div class="card-body">
+
+                                    <input type="text" class="form-control" name="product_id" value="{{ $product->product_id }}"></br>
+
+                                    <input type="text" class="form-control" name="product_name" value="{{ $product->product_name }}"></br>
+                                    <input type="text" class="form-control"
+
+                                    name="unit" value="{{ $product->unit }}"></br>
+                                    <input type="text" class="form-control" name="price" value="{{ $product->price }}"></br>
+<div class="d-grid gap-2 mt-3">
+                                    <input type="file" name="images" class="form-control"></br>
+
+                                    <button type="submit"  class="btn btn-lg btn-primary">Update</button>
+</div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
                     </div>
 
                 </div>

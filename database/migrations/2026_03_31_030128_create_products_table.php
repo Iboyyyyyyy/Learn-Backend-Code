@@ -9,23 +9,27 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-public function up()
-{
-    Schema::create('products', function (Blueprint $table) {
-        $table->id('product_id'); // SERIAL PRIMARY KEY
+    public function up(): void
+    {
+        Schema::create('products', function (Blueprint $table) {
+        $table->id('product_id'); // PRIMARY KEY
         $table->string('product_name', 255)->nullable();
         $table->unsignedBigInteger('category_id')->nullable();
         $table->string('unit', 255)->nullable();
         $table->decimal('price', 10, 2)->nullable();
+
+        // ✅ ADD THIS LINE
+        $table->string('images', 255)->nullable();
+
         $table->timestamps();
 
-        // Foreign key (optional but recommended)
+        // Foreign key
         $table->foreign('category_id')
               ->references('category_id')
               ->on('categories')
               ->onDelete('cascade');
     });
-}
+    }
 
     /**
      * Reverse the migrations.
