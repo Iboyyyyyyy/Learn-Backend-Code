@@ -70,6 +70,44 @@
     var action = "{{ route('products.destroy', ['id' => ':id']) }}".replace(':id', id);
     $('#delete-form').attr('action', action);
 });
+
+
+
+// Add an ID to your Buy button: <button id="buy-button">Buy</button>
+document.getElementById('buy-button').addEventListener('click', function() {
+    if (cart.length === 0) {
+        alert("Cart is empty!");
+        return;
+    }
+
+    fetch('/your-store-route', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}' // Essential for Laravel
+        },
+        body: JSON.stringify({ items: cart })
+    })
+    .then(response => response.json())
+    .then(data => {
+        alert("Order placed successfully!");
+        cart = []; // Clear cart
+        renderTable();
+    });
+});
+
+function submitOrder() {
+    if (cart.length === 0) return alert("Cart is empty!");
+
+    fetch('/your-route', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        },
+        body: JSON.stringify({ order_items: cart })
+    }).then(res => res.json()).then(data => location.reload());
+}
     </script>
     <div class="wrapper">
 
@@ -78,71 +116,76 @@
             <main class="content">
                 <div class="container-fluid p-0">
                     <div class="row">
-                        <div class="col-8 d-flex">
-                            <div class="card flex-fill">
-                                <div class="card-header">
-                                    <form action="{{ route('products.search') }}" method="GET">
-                                        <input type="text" name="product_name" placeholder="Search...">
-                                        <button type="submit">Search</button>
+                        <div class="col-8 d-flex" style="height: auto">
+                            <div class="row">
+                                @forelse ($products as $product)
+                                <div class="col-3 d-flex" style="height: 350px">
+                                    <form action="">
+                                        <div class="card flex-fill">
+                                            <div class="card flex-fill w-100">
+                                                <div class="card">
+                                                    <img class="card-img-top"
+                                                        src="{{ asset('images/' . $product->images) }}"
+                                                        style="height: 170px" alt="Card image cap">
+                                                    <div class="card-body">
+                                                        <h5 class="card-title">{{ $product->product_name }}</h5>
+                                                        <p class="card-text">{{ $product->price}}</p>
+                                                        <center>
+                                                            <a href="javascript:void(0)" class="btn btn-primary"
+                                                                onclick="addToCart({{ json_encode($product->product_id) }}, {{ json_encode($product->product_name) }}, {{ $product->price }})">
+                                                                Add to Card
+                                                            </a>
+                                                        </center>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </form>
-
                                 </div>
+                                @empty
+                                <div class="col-12 d-flex">
+                                    <center>
+                                        <h1 style="color: Red;" class="text-center">No products found.</h1>
+                                    </center>
+                                </div>
+                                @endforelse
+                            </div>
+                        </div>
+
+
+                        <div class="col-4 d-flex" style="height: 435px">
+                            <div class="card flex-fill w-100">
+                                {{-- <div class="card-header">
+                                    <h5 class="card-title mb-0">Create Order</h5>
+                                </div> --}}
                                 <table class="table table-hover my-0">
                                     <thead>
                                         <tr>
-                                            <th>Order ID</th>
+                                            <th>#</th>
                                             <th class="d-none d-xl-table-cell">Product Name</th>
-                                            <th class="d-none d-xl-table-cell">Image</th>
-                                            <th class="d-none d-xl-table-cell">Customer</th>
                                             <th class="d-none d-xl-table-cell">Quantity</th>
                                             <th class="d-none d-xl-table-cell">Price</th>
-                                            <th>Action</th>
+                                            <th></th>
                                         </tr>
                                     </thead>
-                                    <tbody>
-                                        @forelse($orderDetails as $detail)
+                                    <tbody id="order-list-body">
+                                        @forelse ($orderDetails as $detail)
                                         @php
-                                        // Since we start from the Detail, we find the parent Order and the Product
-                                        $order = $orders->firstWhere('order_id', $detail->order_id);
                                         $product = $product_lists->firstWhere('product_id', $detail->product_id);
-                                        $customer = $order ? $customers->firstWhere('customer_id', $order->customer_id)
-                                        : null;
-                                        $totalPrice = $detail->quantity * $product->price;
+                                        $totalPrice = $detail->quantity * ($product->price ?? 0);
                                         @endphp
-                                        <tr>
-                                            <td class="d-none d-xl-table-cell">#{{ $order->order_id ?? 'N/A' }}</td>
-
-                                            <td class="d-none d-xl-table-cell">{{ $product->product_name ?? 'Unknown
-                                                Product' }}</td>
+                                        <tr class="existing-row">
+                                            <td>{{ $loop->iteration }}</td>
+                                            <td class="d-none d-xl-table-cell">{{ $product->product_name ?? 'Unknown' }}
+                                            </td>
                                             <td class="d-none d-xl-table-cell">
-                                                @if($product && $product->images)
-                                                <img src="{{ asset('images/' . $product->images) }}" alt="Product Image"
-                                                    style="width: 50px; height: 50px; object-fit: cover;">
-                                                @else
-                                                <span>No Image</span>
-                                                @endif
+                                                <button class="sub" onclick="subQuantity({{ $detail->id }})">-</button>
+                                                {{ $detail->quantity }}
+                                                <button class="add" onclick="addQuantity({{ $detail->id }})">+++++</button>
                                             </td>
-
-                                            <td class="d-none d-md-table-cell">{{ $customer->customer_name ?? 'Guest' }}
-                                            </td>
-
-                                            <td class="d-none d-xl-table-cell">{{ $detail->quantity }}</td>
-
+                                            <td class="d-none d-xl-table-cell">{{ number_format($totalPrice, 2) }}$</td>
                                             <td>
-                                                <span class="badge bg-warning">
-                                                    {{ number_format($totalPrice, 2) }} $
-                                                </span>
-                                            </td>
-
-                                            <td>
-                                                <button type="button" class="btn-edit" data-toggle="modal"
-                                                    data-target="#update" data-id="{{ $detail->id }}"
-                                                    style="background: transparent; border: none;">
-                                                    <i class="align-middle me-2" data-feather="edit"
-                                                        style="color: Green"></i>
-                                                </button>
-                                                <button type="button" class="btn-delete" data-toggle="modal"
-                                                    data-target="#delete" data-id="{{ $detail->id }}"
+                                                <button type="button" class="btn-delete"
                                                     style="background: transparent; border: none;">
                                                     <i class="align-middle me-2" data-feather="trash-2"
                                                         style="color: Red"></i>
@@ -150,247 +193,88 @@
                                             </td>
                                         </tr>
                                         @empty
-                                        <tr>
-                                            <td colspan="6" class="text-center">No orders found.</td>
+                                        <tr id="empty-row">
+                                            <td colspan="5" class="text-center">No orders found.</td>
                                         </tr>
                                         @endforelse
                                     </tbody>
                                 </table>
                                 </br>
-
-                                {{$orderDetails->links('pagination::bootstrap-5')}}
-
-
-
-                                <div class="modal fade" id="delete" tabindex="-1" role="dialog"
-                                    aria-labelledby="exampleModalLabel" aria-hidden="true">
-                                    <div class="modal-dialog" role="document">
-                                        <form id="delete-form" action="{{ route('products.destroy', ['id' => 0]) }}"
-                                            method="POST">
-                                            @csrf
-                                            @method('DELETE')
-                                            <div class="modal-content">
-                                                <div class="modal-header">
-                                                    <h5 class="modal-title" id="exampleModalLabel">Delete Product <span
-                                                            id="modal-delete-id"></span></h5>
-                                                    <button type="button" class="close" data-dismiss="modal"
-                                                        aria-label="Close">
-                                                        <span aria-hidden="true">&times;</span>
-                                                    </button>
-                                                </div>
-                                                <div class="modal-body">
-                                                    Are you sure you want to delete this product?
-                                                    <input type="hidden" id="delete-id" name="txtdid">
-                                                </div>
-                                                <div class="modal-footer">
-                                                    <button type="button" class="btn btn-secondary"
-                                                        data-dismiss="modal">Close</button>
-                                                    <button type="submit" class="btn btn-danger">Delete</button>
-                                                </div>
-                                            </div>
-                                        </form>
-                                    </div>
-                                </div>
-
-
-                                <div class="modal fade" id="update" tabindex="-1" role="dialog"
-                                    aria-labelledby="exampleModalLabel" aria-hidden="true">
-                                    <div class="modal-dialog" role="document">
-                                        <div class="modal-content">
-                                            <form action="{{ route('orders.store') }}" method="POST" id="order-form">
-                                                @csrf
-                                                <div class="card-body">
-                                                    <label for="customer_id">Customer:</label>
-                                                    <select id="customer_id" name="customer_id" class="form-select mb-3"
-                                                        required>
-                                                        <option value="">Select Customer</option>
-                                                        @foreach ($customers as $customer)
-                                                        <option value="{{ $customer->customer_id }}">{{
-                                                            $customer->customer_name }}</option>
-                                                        @endforeach
-                                                    </select>
-
-                                                    <hr>
-                                                    <h5>Products</h5>
-                                                    <div id="product-container">
-                                                        <div class="product-row border p-2 mb-2">
-                                                            <label>Product:</label>
-                                                            <select name="details[0][product_id]"
-                                                                class="form-select mb-2" required>
-                                                                <option value="">Select Product</option>
-                                                                @foreach ($product_lists as $product)
-                                                                <option value="{{ $product->product_id }}">{{
-                                                                    $product->product_name }}</option>
-                                                                @endforeach
-                                                            </select>
-
-                                                            <label>Quantity:</label>
-                                                            <input type="number" name="details[0][quantity]"
-                                                                class="form-control mb-2" min="1" required>
-                                                        </div>
-                                                    </div>
-
-                                                    <button type="button" class="btn btn-sm btn-outline-primary mb-3"
-                                                        id="add-product">
-                                                        + Add Another Product
-                                                    </button>
-
-                                                    <div class="d-grid gap-2 mt-3">
-                                                        <button type="submit" class="btn btn-lg btn-success">Create
-                                                            Order</button>
-                                                    </div>
-                                                </div>
-                                            </form>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-
-                        <div class="col-4 d-flex" style="height: 435px">
-                            <div class="card flex-fill w-100">
-                                <div class="card-header">
-                                    <h5 class="card-title mb-0">Create Order</h5>
-                                </div>
-                                {{-- <form action="{{ route('orders.store') }}" method="POST" id="order-form">
-                                    csrf
-                                    <div class="card-body">
-                                        <label for="customer_id">Customer:</label>
-                                        <select id="customer_id" name="customer_id" class="form-select mb-3" required>
-                                            <option value="">Select Customer</option>
-                                            foreach ($customers as $customer)
-                                            <option value="{{ $customer->customer_id }}" style="color: black;">{{
-                                                $customer->customer_name }}</option>
-                                            endforeach
-                                        </select>
-                                        <label>Product:</label>
-                                        <select class="form-select product-select mb-2" required>
-                                            <option value="">Select Product</option>
-                                            foreach ($product_lists as $product)
-                                            <option value="{{ $product->product_id }}"
-                                                data-price="{{ $product->price }}">
-                                                {{ $product->product_name }} - ${{ number_format($product->price, 2) }}
-                                            </option>
-                                            endforeach
-                                        </select>
-                                        <label>Quantity:</label>
-                                        <input type="number" name="quantity" class="form-control quantity-input" min="1"
-                                            required>
-
-
-                                        {{-- <button type="button" class="btn btn-sm btn-outline-primary mb-3"
-                                            id="add-product">Add Another Product</button>
-
-                                        <div class="d-grid gap-2 mt-3">
-                                            <button type="submit" class="btn btn-lg btn-success">Create Order</button>
-                                        </div>
-                                    </div>
-                                </form> --}}
-
-                                <form action="orders" method="POST">
-                                    @csrf
-                                    <div class="card-body">
-
-                                        <!-- Customer -->
-                                        <label for="customer_id">Customer</label>
-                                        <select name="customer_id" id="customer_id" class="form-select mb-3">
-                                            <option value="">-- Select Customer --</option>
-                                            @foreach($customers as $customer)
-                                            <option value="{{ $customer->customer_id }}">
-                                                {{ $customer->customer_name }}
-                                            </option>
-                                            @endforeach
-                                        </select>
-
-                                        <!-- Product -->
-                                        <label for="product_id">Product</label>
-                                        <select name="product_id" id="product_id" class="form-select mb-3">
-                                            <option value="">-- Select Product --</option>
-                                            @foreach($products as $product)
-                                            <option value="{{ $product->product_id }}">
-                                                {{ $product->product_name }} - ${{ $product->price }}
-                                            </option>
-                                            @endforeach
-                                        </select>
-
-                                        <!-- Quantity -->
-                                        <label for="quantity">Quantity:</label>
-                                        <input type="number" name="quantity" id="quantity" class="form-control" min="1"
-                                            required>
-
-                                        <div class="d-grid gap-2 mt-3">
-                                            <button type="submit" class="btn btn-success">Create Order</button>
-                                        </div>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-                        <div class="col-4 d-flex" style="height: 500px">
-                            <div class="card flex-fill w-100">
-                                <div class="card-header">
-                                    <h5 class="card-title mb-0">Add Product</h5>
-                                </div>
-                                <form action="/products" method="POST" enctype="multipart/form-data">
-                                    @csrf
-                                    <div class="card-body">
-                                        <input type="text" class="form-control" id="product_name" name="product_name"
-                                            placeholder="Product Name"></br>
-                                        <select id="category_id" name="category_id" class="form-select mb-3">
-                                            <option value="">-- Select Category --</option>
-                                            @foreach($categories as $category)
-                                            <option value="{{ $category->category_id }}">
-                                                {{ $category->category_name }}
-                                            </option>
-                                            @endforeach
-                                        </select></br>
-                                        <input type="text" class="form-control" id="unit" name="unit"
-                                            placeholder="Unit"></br>
-                                        <input type="text" class="form-control" id="price" name="price"
-                                            placeholder="Price"></br>
-                                        <div class="d-grid gap-2 mt-3">
-                                            <input type="file" class="form-control" id="images" name="images"
-                                                placeholder="Image"></br>
-                                            <button type="submit" class="btn btn-lg btn-primary">Insert</button>
-                                        </div>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-                        <div class="col-4 d-flex" style="height: 550px">
-                            <div class="card flex-fill w-100">
-                                <div class="card-header">
-                                    <h5 class="card-title mb-0">Update Product</h5>
-                                </div>
-
-                                <form action="{{ route('products.update') }}" method="POST"
-                                    enctype="multipart/form-data">
-                                    @csrf
-                                    @method('PUT')
-                                    <div class="card-body">
-
-                                    <input type="text" class="form-control" name="product_id" value="{{ $product->product_id }}"></br>
-
-                                    <input type="text" class="form-control" name="product_name" value="{{ $product->product_name }}"></br>
-                                    <input type="text" class="form-control"
-
-                                    name="unit" value="{{ $product->unit }}"></br>
-                                    <input type="text" class="form-control" name="price" value="{{ $product->price }}"></br>
-<div class="d-grid gap-2 mt-3">
-                                    <input type="file" name="images" class="form-control"></br>
-
-                                    <button type="submit"  class="btn btn-lg btn-primary">Update</button>
-</div>
-                                    </div>
-                                </form>
+                                <button class="btn btn-primary">Buy</button>
                             </div>
                         </div>
                     </div>
-
                 </div>
             </main>
         </div>
     </div>
+
+    <script>
+        // 1. GLOBAL ARRAY - This stays active as long as the page is open
+let cart = [];
+
+function addToCart(id, name, price) {
+    // 2. Check if this product is already in our list
+    let existingItem = cart.find(item => item.product_id === id);
+
+    if (existingItem) {
+        // If it exists, just increase the number
+        existingItem.quantity += 1;
+    } else {
+        // If it's new, add a new object to the array
+        cart.push({
+            product_id: id,
+            name: name,
+            price: parseFloat(price),
+            quantity: 1
+        });
+    }
+
+    // 3. Redraw the table with ALL items in the array
+    renderOrderTable();
+}
+
+function renderOrderTable() {
+    const tbody = document.getElementById('order-list-body');
+
+    // Remove only the rows we added via JavaScript (keeping Blade rows if they exist)
+    document.querySelectorAll('.js-new-row').forEach(row => row.remove());
+
+    // Hide the "No orders found" row if we have items
+    const emptyRow = document.getElementById('empty-row');
+    if (cart.length > 0 && emptyRow) {
+        emptyRow.style.display = 'none';
+    }
+
+    // 4. Loop through the array and append each item to the table
+    cart.forEach((item, index) => {
+        let total = (item.price * item.quantity).toFixed(2);
+        let html = `
+            <tr class="js-new-row">
+                <td>${index + 1}</td>
+                <td>${item.name}</td>
+                <td>${item.quantity}</td>
+                <td>$${total}</td>
+                <td>
+                    <button type="button" onclick="removeFromCart(${index})" style="border:none; background:none;">
+                        <i style="color:red; cursor:pointer;">🗑️</i>
+                    </button>
+                </td>
+            </tr>`;
+        tbody.insertAdjacentHTML('beforeend', html);
+    });
+}
+
+function removeFromCart(index) {
+    cart.splice(index, 1);
+    renderOrderTable();
+
+    // If table is totally empty, show the "No orders" message again
+    if (cart.length === 0 && document.getElementById('empty-row')) {
+        document.getElementById('empty-row').style.display = 'table-row';
+    }
+}
+    </script>
 
     <script src="js/app.js"></script>
     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
