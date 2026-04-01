@@ -74,73 +74,72 @@
 
 
 // Add an ID to your Buy button: <button id="buy-button">Buy</button>
-document.getElementById('buy-button').addEventListener('click', function() {
-    if (cart.length === 0) {
-        alert("Cart is empty!");
-        return;
-    }
-
-    fetch('/your-store-route', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': '{{ csrf_token() }}' // Essential for Laravel
-        },
-        body: JSON.stringify({ items: cart })
-    })
-    .then(response => response.json())
-    .then(data => {
-        alert("Order placed successfully!");
-        cart = []; // Clear cart
-        renderTable();
-    });
-});
-
-function submitOrder() {
-    if (cart.length === 0) return alert("Cart is empty!");
-
-    fetch('/your-route', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-        },
-        body: JSON.stringify({ order_items: cart })
-    }).then(res => res.json()).then(data => location.reload());
-}
+// document.getElementById('buy-button').addEventListener('click', function() {
+//     if (cart.length === 0) {
+//         alert("Cart is empty!");
+//         return;
+//     }
+//     fetch('/your-store-route', {
+//         method: 'POST',
+//         headers: {
+//             'Content-Type': 'application/json',
+//             'X-CSRF-TOKEN': '{{ csrf_token() }}' // Essential for Laravel
+//         },
+//         body: JSON.stringify({ items: cart })
+//     })
+//     .then(response => response.json())
+//     .then(data => {
+//         alert("Order placed successfully!");
+//         cart = []; // Clear cart
+//         renderTable();
+//     });
+// });
+// function submitOrder() {
+//     if (cart.length === 0) return alert("Cart is empty!");
+//     fetch('/your-route', {
+//         method: 'POST',
+//         headers: {
+//             'Content-Type': 'application/json',
+//             'X-CSRF-TOKEN': '{{ csrf_token() }}'
+//         },
+//         body: JSON.stringify({ order_items: cart })
+//     }).then(res => res.json()).then(data => location.reload());
+// }
     </script>
     <div class="wrapper">
 
         <div class="main">
-
             <main class="content">
                 <div class="container-fluid p-0">
                     <div class="row">
                         <div class="col-8 d-flex" style="height: auto">
                             <div class="row">
                                 @forelse ($products as $product)
-                                <div class="col-3 d-flex" style="height: 350px">
-                                    <form action="">
+                                <div class="col-2 d-flex" style="height: 310px; text-decoration: none;">
+                                    <a href="javascript:void(0)"
+                                        onclick="addToCart({{ json_encode($product->product_id) }}, {{ json_encode($product->product_name) }}, {{ $product->price }})">
                                         <div class="card flex-fill">
                                             <div class="card flex-fill w-100">
                                                 <div class="card">
                                                     <img class="card-img-top"
                                                         src="{{ asset('images/' . $product->images) }}"
-                                                        style="height: 170px" alt="Card image cap">
+                                                        style="height: 150px; width: 100%;" alt="Card image cap">
                                                     <div class="card-body">
                                                         <h5 class="card-title">{{ $product->product_name }}</h5>
-                                                        <p class="card-text">{{ $product->price}}</p>
+                                                        <p class="card-text" style="color: Red;">{{ $product->price}} $
+                                                        </p>
                                                         <center>
-                                                            <a href="javascript:void(0)" class="btn btn-primary"
+                                                            <a href="javascript:void(0)"
                                                                 onclick="addToCart({{ json_encode($product->product_id) }}, {{ json_encode($product->product_name) }}, {{ $product->price }})">
                                                                 Add to Card
                                                             </a>
+                    <div style="color: red">{{session()->get('name')}}</div>
                                                         </center>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
-                                    </form>
+                                    </a>
                                 </div>
                                 @empty
                                 <div class="col-12 d-flex">
@@ -181,7 +180,8 @@ function submitOrder() {
                                             <td class="d-none d-xl-table-cell">
                                                 <button class="sub" onclick="subQuantity({{ $detail->id }})">-</button>
                                                 {{ $detail->quantity }}
-                                                <button class="add" onclick="addQuantity({{ $detail->id }})">+++++</button>
+                                                <button class="add"
+                                                    onclick="addQuantity({{ $detail->id }})">+++++</button>
                                             </td>
                                             <td class="d-none d-xl-table-cell">{{ number_format($totalPrice, 2) }}</td>
                                             <td>
@@ -200,7 +200,7 @@ function submitOrder() {
                                     </tbody>
                                 </table>
                                 </br>
-                                <button class="btn btn-primary">Buy</button>
+                                <button class="btn btn-primary" onclick="buyorder()">Buy</button>
                             </div>
                         </div>
                     </div>
@@ -210,6 +210,35 @@ function submitOrder() {
     </div>
 
     <script>
+        function buyorder() {
+    if (cart.length === 0) return alert("Cart is empty!");
+
+    fetch('/orders', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json', // Tell Laravel we want JSON back
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        },
+        body: JSON.stringify({ order_items: cart })
+    })
+    .then(res => {
+        // This parses the JSON response from the controller
+        return res.json().then(data => {
+            if (!res.ok) throw new Error(data.message || 'Server Error');
+            return data;
+        });
+    })
+    .then(data => {
+        alert(data.message);
+        location.reload(); // Only reloads on success
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert("Error: " + error.message);
+    });
+}
+
         // 1. GLOBAL ARRAY - This stays active as long as the page is open
 let cart = [];
 
@@ -306,71 +335,73 @@ function removeFromCart(index) {
     </script>
 
 
-    {{-- <script>
-        let productIndex = 1;
+    // {{-- <script>
+        //     let productIndex = 1;
 
-    document.getElementById('add-product').addEventListener('click', function() {
-        const container = document.getElementById('product-container');
-        const newRow = document.createElement('div');
-        newRow.className = 'product-row border p-2 mb-2';
+    // document.getElementById('add-product').addEventListener('click', function() {
+    //     const container = document.getElementById('product-container');
+    //     const newRow = document.createElement('div');
+    //     newRow.className = 'product-row border p-2 mb-2';
 
-        newRow.innerHTML = `
-            <label>Product:</label>
-            <select name="details[${productIndex}][product_id]" class="form-select mb-2" required>
-                <option value="">Select Product</option>
-                foreach ($product_lists as $product)
-                    <option value="{{ $product->product_id }}">{{ $product->product_name }}</option>
-                endforeach
-            </select>
+    //     newRow.innerHTML = `
+    //         <label>Product:</label>
+    //         <select name="details[${productIndex}][product_id]" class="form-select mb-2" required>
+    //             <option value="">Select Product</option>
+    //             foreach ($product_lists as $product)
+    //                 <option value="{{ $product->product_id }}">{{ $product->product_name }}</option>
+    //             endforeach
+    //         </select>
 
-            <label>Quantity:</label>
-            <input type="number" name="details[${productIndex}][quantity]" class="form-control mb-2" min="1" required>
-            <button type="button" class="btn btn-danger btn-sm remove-row">Remove</button>
-        `;
+    //         <label>Quantity:</label>
+    //         <input type="number" name="details[${productIndex}][quantity]" class="form-control mb-2" min="1" required>
+    //         <button type="button" class="btn btn-danger btn-sm remove-row">Remove</button>
+    //     `;
 
-        container.appendChild(newRow);
-        productIndex++;
-    });
+    //     container.appendChild(newRow);
+    //     productIndex++;
+    // });
 
-    // Delegate remove button click
-    document.getElementById('product-container').addEventListener('click', function(e) {
-        if (e.target.classList.contains('remove-row')) {
-            e.target.closest('.product-row').remove();
-        }
-    });
+    // // Delegate remove button click
+    // document.getElementById('product-container').addEventListener('click', function(e) {
+    //     if (e.target.classList.contains('remove-row')) {
+    //         e.target.closest('.product-row').remove();
+    //     }
+    // });
+    //
     </script> --}}
 
 
-    {{-- <script>
-        // Order form JavaScript
-        $(document).ready(function() {
-            let productIndex = 1;
+    // {{-- <script>
+        //     // Order form JavaScript
+    //     $(document).ready(function() {
+    //         let productIndex = 1;
 
-            $('#add-product').click(function() {
-                const productHtml = `
-                    <div class="product-item mb-3">
-                        <label>Product:</label>
-                        <select name="products[${productIndex}][product_id]" class="form-select product-select mb-2" required>
-                            <option value="">Select Product</option>
-                            @foreach ($products as $product)
-                            <option value="{{ $product->product_id }}" data-price="{{ $product->price }}">
-                                {{ $product->product_name }} - ${{ number_format($product->price, 2) }}
-                            </option>
-                            @endforeach
-                        </select>
-                        <label>Quantity:</label>
-                        <input type="number" name="products[${productIndex}][quantity]" class="form-control quantity-input" min="1" required>
-                        <button type="button" class="btn btn-sm btn-outline-danger mt-2 remove-product">Remove</button>
-                    </div>
-                `;
-                $('#product-list').append(productHtml);
-                productIndex++;
-            });
+    //         $('#add-product').click(function() {
+    //             const productHtml = `
+    //                 <div class="product-item mb-3">
+    //                     <label>Product:</label>
+    //                     <select name="products[${productIndex}][product_id]" class="form-select product-select mb-2" required>
+    //                         <option value="">Select Product</option>
+    //                         @foreach ($products as $product)
+    //                         <option value="{{ $product->product_id }}" data-price="{{ $product->price }}">
+    //                             {{ $product->product_name }} - ${{ number_format($product->price, 2) }}
+    //                         </option>
+    //                         @endforeach
+    //                     </select>
+    //                     <label>Quantity:</label>
+    //                     <input type="number" name="products[${productIndex}][quantity]" class="form-control quantity-input" min="1" required>
+    //                     <button type="button" class="btn btn-sm btn-outline-danger mt-2 remove-product">Remove</button>
+    //                 </div>
+    //             `;
+    //             $('#product-list').append(productHtml);
+    //             productIndex++;
+    //         });
 
-            $(document).on('click', '.remove-product', function() {
-                $(this).closest('.product-item').remove();
-            });
-        });
+    //         $(document).on('click', '.remove-product', function() {
+    //             $(this).closest('.product-item').remove();
+    //         });
+    //     });
+    //
     </script> --}}
 </body>
 

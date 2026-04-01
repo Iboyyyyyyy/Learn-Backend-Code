@@ -35,13 +35,13 @@
                         <div class="col-md-8">
                             <div class="mb-4">
                                 <h3>Sign In to <strong>Colorlib</strong></h3>
-                                <p class="mb-4">Hahahahahahahaha</p>
+                                {{-- <p class="mb-4">Hahahahahahahaha</p> --}}
                             </div>
                             <form action="/logininput" method="POST">
                                 @csrf
-                                <label for="username">Username</label>
+                                <label for="customer_name">Username</label>
                                 <div class="form-group first">
-                                    <input type="text" class="form-control" id="username" name="username">
+                                    <input type="text" class="form-control" id="customer_name" name="customer_name">
                                 </div>
                                 <label for="email">Email</label>
                                 <div class="form-group first">

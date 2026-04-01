@@ -5,10 +5,12 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\MainController;
 
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\LoginController;
 // use App\Http\Controllers\CategoriesController;
 // use App\Http\Controllers\UserController;
 
 Route::get('/welcome', [MainController::class, 'indexView']);
+Route::get('/dashboard', [MainController::class, 'dashboardView']);
 
 
 
@@ -22,7 +24,7 @@ Route::delete('/products/{id}', [MainController::class, 'destroy'])->name('produ
 
 Route::post('/orders', [MainController::class, 'storeOrder'])->name('orders.store');
 
-Route::post('/logininput', [MainController::class, 'logininput'])->name('logininput');
+Route::post('/logininput', [LoginController::class, 'login'])->name('logininput');
 
 
 

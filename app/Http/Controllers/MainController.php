@@ -47,18 +47,8 @@ class MainController extends Controller
     } else {
         return back()->with('error', 'Invalid credentials');
     }
+
 }
-
-
-
-
-
-
-
-
-
-
-
 
 
     public function indexView()
@@ -128,74 +118,54 @@ class MainController extends Controller
     }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 public function storeOrder(Request $request)
 {
-    // 1. Validate the input
+    // 1. Validate the structure
     $request->validate([
-        'customer_id' => 'required|exists:customers,customer_id',
-        'product_id'  => 'required|exists:products,product_id',
-        'quantity'    => 'required|integer|min:1',
+        'order_items' => 'required|array',
+        'order_items.*.product_id' => 'required|exists:products,product_id',
+        'order_items.*.quantity' => 'required|integer|min:1',
     ]);
 
-    // Start Transaction: This links the Order and OrderDetail together
+
     DB::beginTransaction();
 
     try {
-        // STEP 1: Execute Order First
+        // STEP 1: Create the Order
         $order = Order::create([
-            'customer_id' => $request->customer_id,
+            'customer_id' => 1, // Or Auth::id() if users are logged in
             'order_date'  => now(),
         ]);
 
-        // Capture the new ID (ensure $primaryKey = 'order_id' is in Order Model)
-        $newOrderId = $order->order_id;
+        // STEP 2: Loop through the items sent from the cart
+        foreach ($request->order_items as $item) {
+            OrderDetails::create([
+                'order_id'   => $order->order_id,
+                'product_id' => $item['product_id'],
+                'quantity'   => $item['quantity'],
+            ]);
+        }
 
-        // STEP 2: Execute Order Detail using the ID from Step 1
-        $product = Product::findOrFail($request->product_id);
-
-        OrderDetails::create([
-            'order_id'   => $newOrderId,
-            'product_id' => $request->product_id,
-            'quantity'   => $request->quantity,
-        ]);
-
-        // If both steps succeeded, save them permanently
         DB::commit();
 
-        return back()->with('console_log', "Success! Order #$newOrderId and details created.");
+        // RETURN JSON instead of back()
+        return response()->json([
+            'success' => true,
+            'message' => "Order #{$order->order_id} created successfully!"
+        ], 201);
 
     } catch (\Exception $e) {
-        // If anything fails (Step 1 or Step 2), undo everything
+
         DB::rollBack();
 
         Log::error('Order Process Failed: ' . $e->getMessage());
 
-        return back()
-            ->withInput()
-            ->with('console_error', "Transaction Failed: " . $e->getMessage());
+        // RETURN JSON ERROR
+        return response()->json([
+            'success' => false,
+            'message' => "Transaction Failed: " . $e->getMessage()
+        ], 500);
     }
 }
+
 }
-
-
-
-
-
-
-
-
-
-
