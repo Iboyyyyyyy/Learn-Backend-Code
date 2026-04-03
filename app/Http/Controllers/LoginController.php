@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\Redirect;
 
 class LoginController extends Controller
 {
+
+
     public function login(Request $request)
 {
     $username = $request->input('customer_name');

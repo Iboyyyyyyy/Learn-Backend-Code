@@ -6,17 +6,22 @@ use App\Http\Controllers\MainController;
 
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\LoginController;
+use App\Http\Middleware\CheckAge;
+
 // use App\Http\Controllers\CategoriesController;
 // use App\Http\Controllers\UserController;
 
-Route::get('/welcome', [MainController::class, 'indexView']);
-Route::get('/dashboard', [MainController::class, 'dashboardView']);
+
 
 
 
 Route::get('/', [MainController::class, 'login']);
 
-Route::get('/products', [MainController::class, 'indexView']);
+Route::middleware(CheckAge::class)->group(function () {
+    Route::get('/welcome', [MainController::class, 'indexView']);
+    Route::get('/dashboard', [MainController::class, 'dashboardView']);
+    Route::get('/products', [MainController::class, 'indexView']);
+});
 
 Route::get('/products', [MainController::class, 'search'])->name('products.search');
 

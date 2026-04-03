@@ -8,41 +8,38 @@ use App\Models\Categories;
 use App\Models\Order;
 use App\Models\Customers;
 use App\Models\OrderDetails;
-use App\Models\User;
+// use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redirect;
 
 class MainController extends Controller
 {
+    public function dashboardView(){
+        return view('dashboard');
+    }
     public function login(){
         return view('login');
     }
 
-
-
-
-
-
-
-
-
-
-
+    
 
     public function logininput(Request $request)
 {
-    $username = $request->input('username');
+    $username = $request->input('customer_name');
     $email = $request->input('email');
     $password = $request->input('password');
 
     // find user first (without password)
-    $user = User::where('name', $username)
+    $user = Customers::where('customer_name', $username)
                 ->where('email', $email)
                 ->first();
 
     // check password correctly
     if ($user && $password === $user->password) {
+        $cusid = $user->customer_id;
+        $cusname = $user->customer_name;
+        session(['name' => $cusname, 'id' => $cusid]);
         return Redirect::to('welcome');
     } else {
         return back()->with('error', 'Invalid credentials');
@@ -133,7 +130,7 @@ public function storeOrder(Request $request)
     try {
         // STEP 1: Create the Order
         $order = Order::create([
-            'customer_id' => 1, // Or Auth::id() if users are logged in
+            'customer_id' => session('id'),
             'order_date'  => now(),
         ]);
 
