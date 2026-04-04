@@ -9,9 +9,11 @@ use App\Models\Order;
 use App\Models\Customers;
 use App\Models\OrderDetails;
 // use App\Models\User;
+// use App\Models\Task;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redirect;
+
 
 class MainController extends Controller
 {
@@ -19,10 +21,12 @@ class MainController extends Controller
         return view('dashboard');
     }
     public function login(){
+        // $tasks = Task::all();
+        // return view('index', compact('tasks'));
         return view('login');
     }
 
-    
+
 
     public function logininput(Request $request)
 {
