@@ -9,7 +9,7 @@ use App\Models\Task;
 class TaskController extends BaseController
 {
     public function index() {
-    $tasks = Task::all();
-    return view('tasks.index', compact('tasks'));
-}
+        $tasks = Task::all();
+        return view('tasks.index', compact('tasks'));
+    }
 }

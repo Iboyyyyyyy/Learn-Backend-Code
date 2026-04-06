@@ -2,6 +2,7 @@
 
 // use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Redis;
 use App\Http\Controllers\MainController;
 
 use App\Http\Controllers\ProductController;
@@ -12,7 +13,10 @@ use App\Http\Middleware\CheckAge;
 // use App\Http\Controllers\UserController;
 
 
-
+Route::get('/redis-test', function () {
+    Redis::set('test', 'OK');
+    return Redis::get('test');
+});
 
 
 Route::get('/', [MainController::class, 'login']);
