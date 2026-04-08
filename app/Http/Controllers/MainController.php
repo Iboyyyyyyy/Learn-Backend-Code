@@ -119,54 +119,54 @@ class MainController extends Controller
     }
 
 
-public function storeOrder(Request $request)
-{
-    // 1. Validate the structure
-    $request->validate([
-        'order_items' => 'required|array',
-        'order_items.*.product_id' => 'required|exists:products,product_id',
-        'order_items.*.quantity' => 'required|integer|min:1',
-    ]);
+// public function storeOrder(Request $request)
+// {
+//     // 1. Validate the structure
+//     $request->validate([
+//         'order_items' => 'required|array',
+//         'order_items.*.product_id' => 'required|exists:products,product_id',
+//         'order_items.*.quantity' => 'required|integer|min:1',
+//     ]);
 
 
-    DB::beginTransaction();
+//     DB::beginTransaction();
 
-    try {
-        // STEP 1: Create the Order
-        $order = Order::create([
-            'customer_id' => session('id'),
-            'order_date'  => now(),
-        ]);
+//     try {
+//         // STEP 1: Create the Order
+//         $order = Order::create([
+//             'customer_id' => session('id'),
+//             'order_date'  => now(),
+//         ]);
 
-        // STEP 2: Loop through the items sent from the cart
-        foreach ($request->order_items as $item) {
-            OrderDetails::create([
-                'order_id'   => $order->order_id,
-                'product_id' => $item['product_id'],
-                'quantity'   => $item['quantity'],
-            ]);
-        }
+//         // STEP 2: Loop through the items sent from the cart
+//         foreach ($request->order_items as $item) {
+//             OrderDetails::create([
+//                 'order_id'   => $order->order_id,
+//                 'product_id' => $item['product_id'],
+//                 'quantity'   => $item['quantity'],
+//             ]);
+//         }
 
-        DB::commit();
+//         DB::commit();
 
-        // RETURN JSON instead of back()
-        return response()->json([
-            'success' => true,
-            'message' => "Order #{$order->order_id} created successfully!"
-        ], 201);
+//         // RETURN JSON instead of back()
+//         return response()->json([
+//             'success' => true,
+//             'message' => "Order #{$order->order_id} created successfully!"
+//         ], 201);
 
-    } catch (\Exception $e) {
+//     } catch (\Exception $e) {
 
-        DB::rollBack();
+//         DB::rollBack();
 
-        Log::error('Order Process Failed: ' . $e->getMessage());
+//         Log::error('Order Process Failed: ' . $e->getMessage());
 
-        // RETURN JSON ERROR
-        return response()->json([
-            'success' => false,
-            'message' => "Transaction Failed: " . $e->getMessage()
-        ], 500);
-    }
-}
+//         // RETURN JSON ERROR
+//         return response()->json([
+//             'success' => false,
+//             'message' => "Transaction Failed: " . $e->getMessage()
+//         ], 500);
+//     }
+// }
 
 }

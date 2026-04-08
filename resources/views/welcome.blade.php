@@ -133,7 +133,7 @@
                                                                 onclick="addToCart({{ json_encode($product->product_id) }}, {{ json_encode($product->product_name) }}, {{ $product->price }})">
                                                                 Add to Card
                                                             </a>
-                    <div style="color: red">{{session()->get('name')}}</div>
+                                                            <div style="color: red">{{session()->get('name')}}</div>
                                                         </center>
                                                     </div>
                                                 </div>

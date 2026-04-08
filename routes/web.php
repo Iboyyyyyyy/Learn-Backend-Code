@@ -4,7 +4,7 @@
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Redis;
 use App\Http\Controllers\MainController;
-
+use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\Auth\GoogleController;
@@ -32,7 +32,7 @@ Route::get('/products', [MainController::class, 'search'])->name('products.searc
 
 Route::delete('/products/{id}', [MainController::class, 'destroy'])->name('products.destroy');
 
-Route::post('/orders', [MainController::class, 'storeOrder'])->name('orders.store');
+// Route::post('/orders', [MainController::class, 'storeOrder'])->name('orders.store');
 
 Route::post('/logininput', [LoginController::class, 'login'])->name('logininput');
 
@@ -48,7 +48,7 @@ Route::put('/update', [ProductController::class, 'update'])->name('products.upda
 
 
 
-
+Route::post('/orders', [OrderController::class, 'store']);
 
 
 
