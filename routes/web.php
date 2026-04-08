@@ -7,6 +7,7 @@ use App\Http\Controllers\MainController;
 
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\LoginController;
+use App\Http\Controllers\Auth\GoogleController;
 use App\Http\Middleware\CheckAge;
 
 // use App\Http\Controllers\CategoriesController;
@@ -44,3 +45,14 @@ Route::post('/logininput', [LoginController::class, 'login'])->name('logininput'
 Route::post('/products', [ProductController::class, 'store'])->name('products.store');
 
 Route::put('/update', [ProductController::class, 'update'])->name('products.update');
+
+
+
+
+
+
+
+
+// login with google
+Route::get('/auth/google', [GoogleController::class, 'redirect']);
+Route::get('/auth/google/callback', [GoogleController::class, 'callback']);
