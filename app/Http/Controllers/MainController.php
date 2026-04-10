@@ -10,7 +10,7 @@ use App\Models\Customers;
 use App\Models\OrderDetails;
 // use App\Models\User;
 // use App\Models\Task;
-use Illuminate\Support\Facades\DB;
+// use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redirect;
 
@@ -19,6 +19,9 @@ class MainController extends Controller
 {
     public function dashboardView(){
         return view('dashboard');
+    }
+    public function productview(){
+        return view('product');
     }
     public function login(){
         // $tasks = Task::all();
@@ -44,7 +47,7 @@ class MainController extends Controller
         $cusid = $user->customer_id;
         $cusname = $user->customer_name;
         session(['name' => $cusname, 'id' => $cusid]);
-        return Redirect::to('welcome');
+        return Redirect::to('pospage');
     } else {
         return back()->with('error', 'Invalid credentials');
     }
@@ -52,7 +55,7 @@ class MainController extends Controller
 }
 
 
-    public function indexView()
+    public function pos()
     {
         $orders = Order::all();
         $customers = Customers::all();
@@ -60,7 +63,7 @@ class MainController extends Controller
         $categories = Categories::all();
         $product_lists = Product::all();
         $products = Product::all();
-        return view('welcome', compact('products', 'categories', 'orders', 'customers', 'orderDetails', 'product_lists'));
+        return view('pospage', compact('products', 'categories', 'orders', 'customers', 'orderDetails', 'product_lists'));
     }
 
 
@@ -93,7 +96,7 @@ class MainController extends Controller
         $customers = Customers::all();
         $orderDetails = OrderDetails::all();
         $categories = Categories::all();
-        return view('welcome', compact('products', 'categories', 'orders', 'customers', 'orderDetails'));
+        return view('pospage', compact('products', 'categories', 'orders', 'customers', 'orderDetails'));
     }
     public function update(Request $request)
     {

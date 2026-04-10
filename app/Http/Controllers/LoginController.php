@@ -26,8 +26,9 @@ class LoginController extends Controller
         $cusid = $user->customer_id;
         $cusname = $user->customer_name;
         session(['name' => $cusname, 'id' => $cusid]);
-        return Redirect::to('welcome');
-    } else {
+        return Redirect::to('dashboard');
+    }
+    else {
         return back()->with('error', 'Invalid credentials');
     }
 

@@ -8,6 +8,7 @@ use App\Models\Categories;
 use App\Models\Order;
 use App\Models\Customers;
 use App\Models\OrderDetails;
+use App\Repositories\ProductRepository;
 // use App\Models\User;
 // use Illuminate\Support\Facades\DB;
 // use Illuminate\Support\Facades\Log;
@@ -15,6 +16,12 @@ use App\Models\OrderDetails;
 
 class ProductController extends Controller
 {
+    protected $productRepo;
+
+    public function __construct(ProductRepository $productRepo)
+    {
+        $this->productRepo = $productRepo;
+    }
 
     public function indexView()
     {
@@ -27,38 +34,9 @@ class ProductController extends Controller
     }
 
     public function store(Request $request)
-{
-    try {
-        $validatedData = $request->validate([
-            'product_name' => 'required|string|max:255',
-            'category_id' => 'required|integer',
-            'unit' => 'required|string|max:50',
-            'price' => 'required|numeric',
-            'images' => 'required|image|mimes:jpeg,png,jpg|max:2048'
-        ]);
-
-
-        if ($request->hasFile('images')) {
-            $file = $request->file('images');
-            $fileName = time() . '.' . $file->getClientOriginalExtension();
-            $file->move(public_path('images'), $fileName);
-
-            $images = 'images/' . $fileName;
-        }
-
-        $validatedData['images'] = $images;
-
-        Product::create($validatedData);
-
-        return redirect()->back()->with('success', 'Product created successfully!');
-
-
-    } catch (\Exception $e) {
-        return response()->json([
-            'error' => 'Failed to create product: ' . $e->getMessage()
-        ]);
+    {
+        return $this->productRepo->createProduct($request->all());
     }
-}
 
 public function update(Request $request)
 {
