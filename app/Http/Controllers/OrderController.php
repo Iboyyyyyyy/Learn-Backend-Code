@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Commands\CreateOrderCommand;
 use Illuminate\Http\Request;
 use App\Services\OrderService;
+use App\Commands\CreateOrderCommand;
 use App\Handlers\CreateOrderHandler;
 
 class OrderController extends Controller
@@ -16,14 +16,11 @@ class OrderController extends Controller
         $this ->orderService = $orderService;
     }
 
-    // this code order use logic with service and respository
+    // this code order use logic with service an
     // public function store(Request $request)
     // {
     //     return $this->orderService->createOrder($request);
     // }
-
-
-
     public function store(Request $request, CreateOrderHandler $handler)
     {
         try{

@@ -9,6 +9,7 @@ use App\Models\Order;
 use App\Models\Customers;
 use App\Models\OrderDetails;
 use App\Repositories\ProductRepository;
+use App\Models\statusproducts;
 // use App\Models\User;
 // use Illuminate\Support\Facades\DB;
 // use Illuminate\Support\Facades\Log;
@@ -23,6 +24,12 @@ class ProductController extends Controller
         $this->productRepo = $productRepo;
     }
 
+    public function productview(){
+        $statusproducts = statusproducts::all();
+        $products = Product::paginate(9);
+        return view('product', compact('products', 'statusproducts'));
+    }
+
     public function indexView()
     {
         $orders = Order::all();
@@ -30,7 +37,7 @@ class ProductController extends Controller
         $orderDetails = OrderDetails::all();
         $categories = Categories::all();
         $products = Product::paginate(9);
-        return view('welcome', compact('products', 'categories', 'orders', 'customers', 'orderDetails'));
+        return view('welcome', compact('products', 'categories', 'orders', 'customers', 'orderDetails', 'status'));
     }
 
     public function store(Request $request)

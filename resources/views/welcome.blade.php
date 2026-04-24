@@ -115,7 +115,7 @@
                         <div class="col-8 d-flex" style="height: auto">
                             <div class="row">
                                 @forelse ($products as $product)
-                                <div class="col-2 d-flex" style="height: 310px; text-decoration: none;">
+                                <div class="col-6 d-flex" style="height: 310px; text-decoration: none;">
                                     <a href="javascript:void(0)"
                                         onclick="addToCart({{ json_encode($product->product_id) }}, {{ json_encode($product->product_name) }}, {{ $product->price }})">
                                         <div class="card flex-fill">

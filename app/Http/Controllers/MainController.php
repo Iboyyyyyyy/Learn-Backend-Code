@@ -20,9 +20,6 @@ class MainController extends Controller
     public function dashboardView(){
         return view('dashboard');
     }
-    public function productview(){
-        return view('product');
-    }
     public function login(){
         // $tasks = Task::all();
         // return view('index', compact('tasks'));
@@ -96,7 +93,7 @@ class MainController extends Controller
         $customers = Customers::all();
         $orderDetails = OrderDetails::all();
         $categories = Categories::all();
-        return view('pospage', compact('products', 'categories', 'orders', 'customers', 'orderDetails'));
+        return view('product', compact('products', 'categories', 'orders', 'customers', 'orderDetails'));
     }
     public function update(Request $request)
     {

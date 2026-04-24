@@ -103,7 +103,8 @@
                         <div class="col-8 d-flex" style="height: auto">
                             <div class="row">
                                 @forelse ($products as $product)
-                                <div class="col-2 d-flex" style="height: 310px; text-decoration: none;">
+                                @if ($product->status == 1 || $product->status == 2)
+                                    <div class="col-2 d-flex" style="height: 310px;">
                                     <a href="javascript:void(0)"
                                         onclick="addToCart({{ json_encode($product->product_id) }}, {{ json_encode($product->product_name) }}, {{ $product->price }})">
                                         <div class="card flex-fill">
@@ -129,6 +130,7 @@
                                         </div>
                                     </a>
                                 </div>
+                                @endif
                                 @empty
                                 <div class="col-12 d-flex">
                                     <center>

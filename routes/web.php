@@ -25,10 +25,10 @@ Route::get('/', [MainController::class, 'login']);
 Route::middleware('checkage')->group(function () {
     Route::get('/Shopping_Page', [MainController::class, 'pos']);
     Route::get('/dashboard', [MainController::class, 'dashboardView']);
-    Route::get('/product', [MainController::class, 'productview']);
+    Route::get('/product', [ProductController::class, 'productview']);
 });
 
-// Route::get('/products', [MainController::class, 'search'])->name('products.search');
+Route::get('/products', [MainController::class, 'search'])->name('products.search');
 
 // Route::delete('/products/{id}', [MainController::class, 'destroy'])->name('products.destroy');
 
